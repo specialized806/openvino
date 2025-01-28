@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2023 Intel Corporation
+// Copyright (C) 2018-2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -7,8 +7,6 @@
 #include <fstream>
 #include <random>
 
-#include "ngraph_functions/builders.hpp"
-#include "ngraph_functions/subgraph_builders.hpp"
 #include "openvino/core/visibility.hpp"
 #include "openvino/pass/manager.hpp"
 #include "openvino/util/file_util.hpp"

@@ -9,9 +9,9 @@ import sys
 import tempfile
 from time import perf_counter
 
-import datasets
 import openvino as ov
-from openvino.runtime import get_version
+import datasets
+from openvino import get_version
 from transformers import AutoTokenizer
 from transformers.onnx import export
 from transformers.onnx.features import FeaturesManager
@@ -57,7 +57,7 @@ def main():
     sst2_sentences = sst2['validation']['sentence']
     # Warm up
     encoded_warm_up = dict(tokenizer('Warm up sentence is here.', return_tensors='np'))
-    for _ in ireqs:
+    for _ in range(len(ireqs)):
         ireqs.start_async(encoded_warm_up)
     ireqs.wait_all()
     # Benchmark

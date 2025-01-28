@@ -1,10 +1,8 @@
-// Copyright (C) 2018-2023 Intel Corporation
+// Copyright (C) 2018-2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
 #pragma once
-
-#include <ngraph/op/normalize_l2.hpp>
 
 #include "openvino/reference/autobroadcast_binop.hpp"
 #include "openvino/reference/reduce_sum.hpp"

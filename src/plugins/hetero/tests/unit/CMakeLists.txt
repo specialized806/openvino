@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2023 Intel Corporation
+# Copyright (C) 2018-2025 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
@@ -21,11 +21,9 @@ ov_add_test_target(
             ${OBJ_LIB}
         LINK_LIBRARIES
             unit_test_utils
-            ngraphFunctions
         DEPENDENCIES
             mock_engine
-            ngraphFunctions
         ADD_CLANG_FORMAT
         LABELS
-            HETERO
+            OV UNIT HETERO
 )

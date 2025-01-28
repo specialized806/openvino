@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2023 Intel Corporation
+// Copyright (C) 2018-2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -14,19 +14,19 @@
 #include "low_precision/fake_quantize_decomposition.hpp"
 
 #include "common_test_utils/ov_test_utils.hpp"
-#include "lpt_ngraph_functions/get_dequantization_function.hpp"
+#include "ov_lpt_models/get_dequantization.hpp"
 #include "low_precision/common/fake_quantize_dequantization.hpp"
 #include "low_precision/network_helper.hpp"
 
 using namespace testing;
 using namespace ov;
 using namespace ov::pass;
-using namespace ngraph::builder::subgraph;
+using namespace ov::builder::subgraph;
 
 class GetDequantizationTestValues {
 public:
     FakeQuantizeOnData fakeQuantize;
-    // actual dequantization to create nGraph function to run NetworkHelper::getDequantization
+    // actual dequantization to create ov::Model to run NetworkHelper::getDequantization
     DequantizationOperations actualDequantization;
     DequantizationOperations expectedDequantization;
 };

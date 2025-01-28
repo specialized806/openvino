@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2023 Intel Corporation
+// Copyright (C) 2018-2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -36,19 +36,6 @@ TEST(CpuShapeInfer, v3ShapeOf5DTest) {
 
     std::vector<StaticShape> static_input_shapes = {StaticShape{2, 3, 4, 5, 6}},
             static_output_shapes = {StaticShape{5}};
-    unit_test::cpu_test_shape_infer(shapeof.get(), static_input_shapes, static_output_shapes);
-}
-
-TEST(CpuShapeInfer, ShapeOf0DTest) {
-    GTEST_SKIP() << "Skipping test, please check CVS-108946";
-    auto data = std::make_shared<ov::op::v0::Parameter>(element::f32, PartialShape{});
-
-    auto shapeof =
-            std::make_shared<op::v3::ShapeOf>(data);
-
-    std::vector<StaticShape> static_input_shapes = {StaticShape{}},
-            static_output_shapes = {StaticShape{}};
-    // TODO , can't pass implementation don't support 0D shape input
     unit_test::cpu_test_shape_infer(shapeof.get(), static_input_shapes, static_output_shapes);
 }
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2023 Intel Corporation
+// Copyright (C) 2018-2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -19,7 +19,7 @@
 using namespace ov;
 using namespace testing;
 
-// LPT to nGraph migration: temporary disabling unexpected not reproduced fails on CI:
+// LPT to openvino migration: temporary disabling unexpected not reproduced fails on CI:
 // https://openvino-ci.intel.com/job/private-ci/job/ie/job/build-linux-ubuntu18_i386/478/
 TEST_F(TransformationTestsF, MishFusing) {
     {

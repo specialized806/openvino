@@ -5,12 +5,13 @@
 #include "low_precision/batch_to_space.hpp"
 
 #include <memory>
-#include <ngraph/ngraph.hpp>
-#include <openvino/op/batch_to_space.hpp>
-#include <ngraph/pattern/op/wrap_type.hpp>
 
-#include "low_precision/network_helper.hpp"
 #include "itt.hpp"
+#include "openvino/util/log.hpp"
+
+#include "openvino/op/batch_to_space.hpp"
+#include "openvino/pass/pattern/op/wrap_type.hpp"
+#include "low_precision/network_helper.hpp"
 
 namespace ov {
 namespace pass {
@@ -20,20 +21,20 @@ BatchToSpaceTransformation::BatchToSpaceTransformation(const Params& params) : L
     MATCHER_SCOPE(BatchToSpaceTransformation);
     auto matcher = pattern::wrap_type<ov::op::v1::BatchToSpace>();
 
-    ngraph::graph_rewrite_callback callback = [this](pattern::Matcher& m) {
+    ov::graph_rewrite_callback callback = [this](pattern::Matcher& m) {
         auto op = m.get_match_root();
         if (transformation_callback(op)) {
             return false;
         }
-        return transform(*context, m);
+        return transform(m);
     };
 
-    auto m = std::make_shared<ngraph::pattern::Matcher>(matcher, matcher_name);
+    auto m = std::make_shared<ov::pass::pattern::Matcher>(matcher, matcher_name);
     this->register_matcher(m, callback);
 }
 
-bool BatchToSpaceTransformation::canBeTransformed(const TransformationContext& context, std::shared_ptr<Node> op) const {
-    if (!LayerTransformation::canBeTransformed(context, op)) {
+bool BatchToSpaceTransformation::canBeTransformed(const std::shared_ptr<Node>& op) const {
+    if (!LayerTransformation::canBeTransformed(op)) {
         return false;
     }
 
@@ -45,13 +46,15 @@ bool BatchToSpaceTransformation::canBeTransformed(const TransformationContext& c
     return dequantization.isPerTensor();
 }
 
-bool BatchToSpaceTransformation::transform(TransformationContext& context, ngraph::pattern::Matcher& m) {
-    if (!canBeTransformed(context, m.get_match_root())) {
+bool BatchToSpaceTransformation::transform(ov::pass::pattern::Matcher& m) {
+    if (!canBeTransformed(m.get_match_root())) {
         return false;
     }
 
     const std::shared_ptr<Node> op = NetworkHelper::separateInStandaloneBranch(m.get_match_root(), defaultPrecisions);
-    moveDequantizationAfter(context, op, NetworkHelper::getDequantization(op, defaultPrecisions), false);
+    const auto newOperation = moveDequantizationAfter(op, NetworkHelper::getDequantization(op, defaultPrecisions));
+
+    OPENVINO_DEBUG("LPT: done: ", newOperation);
     return true;
 }
 

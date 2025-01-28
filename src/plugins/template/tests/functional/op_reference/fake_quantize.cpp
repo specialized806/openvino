@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2023 Intel Corporation
+// Copyright (C) 2018-2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -32,8 +32,8 @@ struct FakeQuantizeParams {
           m_expected_shape(expected_shape),
           m_input_type(input_type),
           m_expected_type(expected_type),
-          m_input_data(CreateTensor(input_type, input_data)),
-          m_expected_data(CreateTensor(expected_type, expected_data)),
+          m_input_data(CreateTensor(input_shape, input_type, input_data)),
+          m_expected_data(CreateTensor(expected_shape, expected_type, expected_data)),
           m_input_low(input_low),
           m_input_high(input_high),
           m_output_low(output_low),
@@ -253,6 +253,22 @@ std::vector<FakeQuantizeParams> generateParamsForFakeQuantize() {
                                                     }),
                            16,
                            op::AutoBroadcastSpec(op::AutoBroadcastType::NUMPY)),
+        FakeQuantizeParams(
+            ov::Shape{1, 2, 4, 4},
+            ov::Shape{1, 2, 4, 4},
+            IN_ET,
+            IN_ET,
+            iota_vector<T>(shape_size(Shape{1, 2, 4, 4})),
+            std::vector<T>{
+                0,     0,     0,    0,    0,    0,    0,    0,     0,     8.75,  8.75,  8.75,  8.75, 8.75, 8.75, 17.5,
+                23.75, 23.75, 27.5, 27.5, 27.5, 27.5, 27.5, 31.25, 31.25, 31.25, 31.25, 31.25, 35,   35,   35,   35,
+            },
+            op::v0::Constant::create(IN_ET, Shape{1, 2, 1, 1}, {5.f, 10.f}),
+            op::v0::Constant::create(IN_ET, Shape{1, 1}, {30.f}),
+            op::v0::Constant::create(IN_ET, Shape{2, 1, 1}, {0.f, 20.f}),
+            op::v0::Constant::create(IN_ET, Shape{1}, {35.f}),
+            5),
+
     };
     return params;
 }

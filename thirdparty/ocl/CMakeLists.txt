@@ -1,12 +1,12 @@
-# Copyright (C) 2018-2023 Intel Corporation
+# Copyright (C) 2018-2025 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
 function(get_lib_name TARGET_NAME LIBRARY_NAME)
     if(WIN32)
-        set(LIB_SUFFIX "${IE_BUILD_POSTFIX}${CMAKE_LINK_LIBRARY_SUFFIX}")
+        set(LIB_SUFFIX "${OV_BUILD_POSTFIX}${CMAKE_LINK_LIBRARY_SUFFIX}")
     else()
-        set(LIB_SUFFIX "${IE_BUILD_POSTFIX}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+        set(LIB_SUFFIX "${OV_BUILD_POSTFIX}${CMAKE_SHARED_LIBRARY_SUFFIX}")
     endif()
 
     set("${LIBRARY_NAME}" "${CMAKE_SHARED_MODULE_PREFIX}${TARGET_NAME}${LIB_SUFFIX}" PARENT_SCOPE)
@@ -32,6 +32,15 @@ unset(CMAKE_DEBUG_POSTFIX)
 set(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION OFF)
 if(NOT DEFINED USE_DYNAMIC_VCXX_RUNTIME)
     set(USE_DYNAMIC_VCXX_RUNTIME ON)
+endif()
+
+#
+# Suppress warnings
+#
+if(OV_COMPILER_IS_INTEL_LLVM AND WIN32)
+    ov_add_compiler_flags("/Wno-macro-redefined")
+    ov_add_compiler_flags("/Wno-nonportable-include-path")
+    ov_add_compiler_flags("/Wno-comment")
 endif()
 
 #

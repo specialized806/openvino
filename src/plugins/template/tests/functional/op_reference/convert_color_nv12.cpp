@@ -1,19 +1,18 @@
-// Copyright (C) 2018-2023 Intel Corporation
+// Copyright (C) 2018-2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
 #include <gtest/gtest.h>
 
-#include <openvino/core/model.hpp>
-#include <openvino/op/nv12_to_bgr.hpp>
-#include <openvino/op/nv12_to_rgb.hpp>
 #include <tuple>
 
 #include "base_reference_test.hpp"
 #include "functional_test_utils/skip_tests_config.hpp"
+#include "openvino/core/model.hpp"
+#include "openvino/op/nv12_to_bgr.hpp"
+#include "openvino/op/nv12_to_rgb.hpp"
 
 using namespace ov;
-using namespace InferenceEngine;
 using namespace reference_tests;
 
 class ReferenceConvertColorNV12LayerTest : public testing::Test, public CommonReferenceTest {

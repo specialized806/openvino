@@ -1,8 +1,17 @@
-# Copyright (C) 2018-2023 Intel Corporation
+# Copyright (C) 2018-2025 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
 set(TARGET_NAME "ov_tensorflow_lite_frontend_tests")
+
+ov_check_pip_packages(REQUIREMENTS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt"
+                      MESSAGE_MODE WARNING
+                      WARNING_MESSAGE "TensorFlow Lite testing models weren't generated, some tests will fail due models not found"
+                      RESULT_VAR tensorflow_FOUND)
+
+if(tensorflow_FOUND)
+    set(ctest_labels OV UNIT)
+endif()
 
 ov_add_test_target(
     NAME ${TARGET_NAME}
@@ -16,16 +25,10 @@ ov_add_test_target(
             openvino_tensorflow_lite_frontend
         ADD_CLANG_FORMAT
         LABELS
-            OV
-            TFL_FE
+            ${ctest_labels} TFL_FE
 )
 
 # Test model generating
-
-ov_check_pip_packages(REQUIREMENTS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt"
-                      MESSAGE_MODE WARNING
-                      WARNING_MESSAGE "TensorFlow Lite testing models weren't generated, some tests will fail due models not found"
-                      RESULT_VAR tensorflow_FOUND)
 
 set(TEST_TENSORFLOW_LITE_MODELS_DIRNAME ${TEST_MODEL_ZOO}/tensorflow_lite_test_models)
 target_compile_definitions(${TARGET_NAME} PRIVATE -D TEST_TENSORFLOW_LITE_MODELS_DIRNAME=\"${TEST_TENSORFLOW_LITE_MODELS_DIRNAME}/\")

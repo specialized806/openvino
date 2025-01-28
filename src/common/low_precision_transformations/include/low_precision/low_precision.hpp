@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2023 Intel Corporation
+// Copyright (C) 2018-2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <memory>
+#include <unordered_set>
 
 // one place to include all Low Precision Transformations from ov::pass::low_precision
 #include "low_precision/rt_info/intervals_alignment_attribute.hpp"
@@ -41,39 +42,50 @@ class LP_TRANSFORMATIONS_API LowPrecision;
 
 class ov::pass::low_precision::MarkupOptimizations : public ov::pass::ModelPass {
 public:
-    OPENVINO_RTTI("MarkupOptimizations", "0");
+    OPENVINO_MODEL_PASS_RTTI("low_precision::MarkupOptimizations");
     MarkupOptimizations(
         const std::vector<PrecisionsRestriction>& precisionRestrictions,
         const std::vector<QuantizationGranularityRestriction>& quantizationRestrictions,
         const AttributeParameters& params);
     bool run_on_model(const std::shared_ptr<ov::Model>& m) override;
 private:
-    const std::vector<PrecisionsRestriction>& precisionRestrictions;
-    const std::vector<QuantizationGranularityRestriction>& quantizationRestrictions;
-    const AttributeParameters& params;
+    const std::vector<PrecisionsRestriction> precisionRestrictions;
+    const std::vector<QuantizationGranularityRestriction> quantizationRestrictions;
+    const AttributeParameters params;
 };
 
 class ov::pass::low_precision::TypeRelaxedReplacer : public ov::pass::GraphRewrite {
 public:
-    OPENVINO_RTTI("TypeRelaxedReplacer", "0");
+    OPENVINO_GRAPH_REWRITE_RTTI("low_precision::TypeRelaxedReplacer");
     TypeRelaxedReplacer();
 };
 
-class ov::pass::low_precision::LowPrecision : public ov::pass::ModelPass {
+class LP_TRANSFORMATIONS_API ov::pass::low_precision::LowPrecision : public ov::pass::ModelPass {
 public:
-    OPENVINO_RTTI("LowPrecision", "0");
+    OPENVINO_MODEL_PASS_RTTI("low_precision::LowPrecision");
     LowPrecision(
         const std::vector<PrecisionsRestriction>& precisionRestrictions = {},
         const std::vector<QuantizationGranularityRestriction>& quantizationRestrictions = {},
         const LayerTransformation::Params = LayerTransformation::Params());
     bool run_on_model(const std::shared_ptr<ov::Model>& m) override;
 
-    static bool isFunctionQuantized(const std::shared_ptr<const ov::Model>& model);
+    static bool isFunctionQuantized(
+        const std::shared_ptr<const ov::Model>& model,
+        const std::set<levels>& supported_levels = all_levels);
     static bool isFQLevelsPresent(const std::shared_ptr<const ov::Model>& model, const std::set<size_t>& levels);
+
+    template <typename T, class... Args>
+    std::shared_ptr<T> add_main(Args&&... args) {
+        const auto tr = std::make_shared<T>(std::forward<Args>(args)...);
+        additional_main_passes.push_back(tr);
+        return tr;
+    }
 
 protected:
     std::vector<PrecisionsRestriction> precisionRestrictions;
     std::vector<QuantizationGranularityRestriction> quantizationRestrictions;
     // remove
     LayerTransformation::Params params;
+
+    std::vector<std::shared_ptr<MatcherPass>> additional_main_passes;
 };

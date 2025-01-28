@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2018-2023 Intel Corporation
+﻿// Copyright (C) 2018-2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -12,14 +12,15 @@
 
 #include "low_precision/common/ie_lpt_exception.hpp"
 #include "low_precision/network_helper.hpp"
+#include "low_precision/rt_info/disable_cleanup_attribute.hpp"
+
 #include "itt.hpp"
-#include "low_precision/rt_info/skip_cleanup_attribute.hpp"
 
 namespace ov {
 namespace pass {
 namespace low_precision {
 
-FuseConvertTransformation::FuseConvertTransformation(const Params& params) : LayerTransformation(params) {
+FuseConvertTransformation::FuseConvertTransformation(const Params& params) : CleanupTransformation(params) {
     MATCHER_SCOPE(FuseConvertTransformation);
     auto multiply = pattern::wrap_type<ov::opset1::Multiply>({ pattern::wrap_type<ov::opset1::Convert>(), pattern::wrap_type<ov::opset1::Constant>() });
     auto subtract = pattern::wrap_type<ov::opset1::Subtract>({ pattern::wrap_type<ov::opset1::Convert>(), pattern::wrap_type<ov::opset1::Constant>() });
@@ -39,7 +40,7 @@ FuseConvertTransformation::FuseConvertTransformation(const Params& params) : Lay
         if (transformation_callback(op)) {
             return false;
         }
-        return transform(*context, m);
+        return transform(m);
     };
 
     this->register_matcher(matcher, callback);
@@ -67,9 +68,9 @@ std::shared_ptr<Node> removeConvertIfPossibleForSubtract(
 
 } // namespace
 
-bool FuseConvertTransformation::transform(TransformationContext& context, ov::pass::pattern::Matcher &m) {
+bool FuseConvertTransformation::transform(ov::pass::pattern::Matcher &m) {
     const auto op = m.get_match_root();
-    if (!canBeTransformed(context, op)) {
+    if (!canBeTransformed(op)) {
         return false;
     }
 
@@ -113,8 +114,8 @@ bool FuseConvertTransformation::transform(TransformationContext& context, ov::pa
     return true;
 }
 
-bool FuseConvertTransformation::canBeTransformed(const TransformationContext& context, std::shared_ptr<Node> op) const {
-    if (!getAttribute<SkipCleanupAttribute>(op).empty()) {
+bool FuseConvertTransformation::canBeTransformed(const std::shared_ptr<Node>& op) const {
+    if (!CleanupTransformation::canBeTransformed(op)) {
         return false;
     }
 

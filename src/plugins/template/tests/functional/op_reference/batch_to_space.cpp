@@ -1,12 +1,13 @@
-// Copyright (C) 2018-2023 Intel Corporation
+// Copyright (C) 2018-2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
+
+#include "openvino/op/batch_to_space.hpp"
 
 #include <gtest/gtest.h>
 
 #include "base_reference_test.hpp"
-#include "openvino/opsets/opset1.hpp"
-#include "openvino/opsets/opset2.hpp"
+#include "openvino/op/parameter.hpp"
 
 using namespace reference_tests;
 using namespace ov;
@@ -47,7 +48,7 @@ public:
     }
 
     static std::string getTestCaseName(const testing::TestParamInfo<BatchToSpaceParams>& obj) {
-        auto param = obj.param;
+        const auto& param = obj.param;
         std::ostringstream result;
         result << "dType=" << param.dataTensor.type;
         result << "_dShape=" << param.dataTensor.shape;
@@ -69,11 +70,11 @@ public:
 
 private:
     static std::shared_ptr<Model> CreateFunction(const BatchToSpaceParams& params) {
-        const auto data = std::make_shared<opset1::Parameter>(params.dataTensor.type, params.dataTensor.shape);
-        const auto blockShape = std::make_shared<opset1::Parameter>(element::i64, params.blockShapeTensor.shape);
-        const auto cropsBegin = std::make_shared<opset1::Parameter>(element::i64, params.cropsBeginTensor.shape);
-        const auto cropsEnd = std::make_shared<opset1::Parameter>(element::i64, params.cropsEndTensor.shape);
-        const auto batchToSpace = std::make_shared<opset2::BatchToSpace>(data, blockShape, cropsBegin, cropsEnd);
+        const auto data = std::make_shared<op::v0::Parameter>(params.dataTensor.type, params.dataTensor.shape);
+        const auto blockShape = std::make_shared<op::v0::Parameter>(element::i64, params.blockShapeTensor.shape);
+        const auto cropsBegin = std::make_shared<op::v0::Parameter>(element::i64, params.cropsBeginTensor.shape);
+        const auto cropsEnd = std::make_shared<op::v0::Parameter>(element::i64, params.cropsEndTensor.shape);
+        const auto batchToSpace = std::make_shared<op::v1::BatchToSpace>(data, blockShape, cropsBegin, cropsEnd);
         return std::make_shared<Model>(NodeVector{batchToSpace},
                                        ParameterVector{data, blockShape, cropsBegin, cropsEnd});
     }
@@ -127,7 +128,7 @@ std::vector<BatchToSpaceParams> generateBatchToSpaceParams() {
             reference_tests::Tensor({4}, element::i64, std::vector<int64_t>{1, 1, 2, 2}),
             reference_tests::Tensor({4}, element::i64, std::vector<int64_t>{0, 0, 0, 0}),
             reference_tests::Tensor({4}, element::i64, std::vector<int64_t>{0, 0, 0, 0}),
-            reference_tests::Tensor({2, 1, 1, 6}, IN_ET, std::vector<T>{1, 4, 2, 5, 3, 6, 7, 10, 8, 11, 9, 12}),
+            reference_tests::Tensor({1, 1, 2, 6}, IN_ET, std::vector<T>{1, 4, 2, 5, 3, 6, 7, 10, 8, 11, 9, 12}),
             "input_with_shape_4x1x1x3_2"),
 
         // input_with_shape_4x1x2x3

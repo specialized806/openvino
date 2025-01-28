@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2023 Intel Corporation
+// Copyright (C) 2018-2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -20,6 +20,8 @@ void pre_replace_deconv::run(program& p) {
     bool update_processing_order = false;
 
     auto& stream = p.get_stream();
+
+    auto& lo = p.get_layout_optimizer();
 
     auto itr = p.nodes_map.begin();
     while (itr != p.nodes_map.end()) {
@@ -51,8 +53,8 @@ void pre_replace_deconv::run(program& p) {
                 // fp16 and fp32 bfyx implementation supports transposed convolution
                 perform_opt |= cldnn::format::dimension(input_layout.format) == 4 &&
                                (input_layout.data_type == data_types::f32 || input_layout.data_type == data_types::f16) &&
-                               !((_lo.get_optimization_attributes().b_fs_yx_fsv16_network || input_layout.format == format::b_fs_yx_fsv16) &&
-                                _lo.is_format_optimized(deconv_node, format::b_fs_yx_fsv16));
+                               !((lo.get_optimization_attributes().b_fs_yx_fsv16_network || input_layout.format == format::b_fs_yx_fsv16) &&
+                                lo.is_format_optimized(deconv_node, format::b_fs_yx_fsv16));
                 // int8/uint8 input
                 perform_opt |= (input_layout.data_type == data_types::i8 || input_layout.data_type == data_types::u8);
 
@@ -125,12 +127,13 @@ void pre_replace_deconv::run(program& p) {
                                                                pad_begin,
                                                                pad_end,
                                                                grouped_weights_shape,
-                                                               ov::op::PadType::EXPLICIT,
-                                                               output_padding);
+                                                               ov::op::PadType::EXPLICIT);
                 conv_prim->transposed = true;
+                conv_prim->output_paddings = { output_padding };
                 program_node& new_node = p.get_or_create(conv_prim);
 
                 auto& conv_node = new_node.as<convolution>();
+                conv_node.set_forced_impl_type(deconv_node.get_forced_impl_type());
 
                 // add connections input->convolution, weights->convolution and bias->convolution
                 p.add_connection(input_node, conv_node);
@@ -217,7 +220,7 @@ void pre_replace_deconv::run(program& p) {
                      std::vector<float> weights_vec_float;
 
                      if (weights_data_type == data_types::f16) {
-                         mem_lock<half_t, mem_lock_type::read> src{ weights_node_ptr->as<data>().get_attached_memory_ptr(), stream };
+                         mem_lock<ov::float16, mem_lock_type::read> src{ weights_node_ptr->as<data>().get_attached_memory_ptr(), stream };
                          for (uint32_t i = 0; i < weights_layout.count(); i++)
                              weights_vec_float.push_back(static_cast<float>(src.data()[i]));
                      } else {
@@ -236,8 +239,8 @@ void pre_replace_deconv::run(program& p) {
                          subpixel_weights);
 
                      if (weights_data_type == data_types::f16) {
-                         mem_lock<half_t, mem_lock_type::write> dst{ data_to_allocate, stream};
-                         program_helpers::set_weights_values<half_t>(dst.data(), subpixel_weights);
+                         mem_lock<ov::float16, mem_lock_type::write> dst{ data_to_allocate, stream};
+                         program_helpers::set_weights_values<ov::float16>(dst.data(), subpixel_weights);
                      } else if (weights_data_type == data_types::f32) {
                          mem_lock<float, mem_lock_type::write> dst{ data_to_allocate, stream };
                          program_helpers::set_weights_values<float>(dst.data(), subpixel_weights);
@@ -264,8 +267,8 @@ void pre_replace_deconv::run(program& p) {
                                                                pad,
                                                                pad,
                                                                grouped_weights_shape,
-                                                               ov::op::PadType::EXPLICIT,
-                                                               output_padding);
+                                                               ov::op::PadType::EXPLICIT);
+                conv_prim->output_paddings = {output_padding};
                 program_node& created_node = p.get_or_create(conv_prim);
 
                 auto& conv_node = created_node.as<convolution>();
@@ -282,7 +285,7 @@ void pre_replace_deconv::run(program& p) {
                 float bias = 0;
 
                 if (bias_data_type == data_types::f16) {
-                    mem_lock<half_t, mem_lock_type::read> src{ bias_id_node_ptr->as<data>().get_attached_memory_ptr(), stream };
+                    mem_lock<ov::float16, mem_lock_type::read> src{ bias_id_node_ptr->as<data>().get_attached_memory_ptr(), stream };
                     bias = static_cast<float>(src.data()[0]);
                 } else {
                     mem_lock<float, mem_lock_type::read> src{ bias_id_node_ptr->as<data>().get_attached_memory_ptr(), stream };

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 Intel Corporation
+// Copyright (C) 2024 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -12,9 +12,9 @@
 #include "checkpoint_utils.hpp"
 #include "openvino/core/any.hpp"
 #include "openvino/frontend/exception.hpp"
-#include "saved_tensor_slice.pb.h"
-#include "tensor_shape.pb.h"
-#include "types.pb.h"
+#include "ov_tensorflow/saved_tensor_slice.pb.h"
+#include "ov_tensorflow/tensor_shape.pb.h"
+#include "ov_tensorflow/types.pb.h"
 
 namespace ov {
 namespace frontend {

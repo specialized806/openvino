@@ -1,11 +1,10 @@
-// Copyright (C) 2018-2023 Intel Corporation
+// Copyright (C) 2018-2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
 #pragma once
 
 #include <memory>
-#include "transformation_context.hpp"
 #include "layer_transformation.hpp"
 #include "openvino/opsets/opset1.hpp"
 
@@ -14,22 +13,38 @@ namespace pass {
 namespace low_precision {
 
 /**
- * @ingroup ie_transformation_common_api
+ * @ingroup ov_transformation_common_api
  * @brief WeightableLayerTransformation is base type for weightable operation transformation.
  */
 class LP_TRANSFORMATIONS_API WeightableLayerTransformation : public LayerTransformation {
 public:
-    WeightableLayerTransformation(const Params& params);
-    bool canBeTransformed(const TransformationContext& context, std::shared_ptr<Node> layer) const override;
-    bool canConvolutionBeTransformed(const TransformationContext& context, std::shared_ptr<Node> layer,
-        const std::vector<ov::element::Type>& defaultPrecisions) const;
-    bool isPrecisionPreserved(std::shared_ptr<Node> layer) const noexcept override;
+    struct LP_TRANSFORMATIONS_API CanBeTransformedParams {
+        CanBeTransformedParams(
+            const bool constantWeight = true,
+            const bool perTensorQuantizationOnData = true,
+            const bool limitWeightsDataPrecision = true,
+            const bool dynamicWeights = false) :
+            constantWeight(constantWeight),
+            perTensorQuantizationOnData(perTensorQuantizationOnData),
+            limitWeightsDataPrecision(limitWeightsDataPrecision),
+            dynamicWeights(dynamicWeights) {
+        }
 
-    static bool checkPrecisionOnActivation(
-        const std::shared_ptr<const ov::Node>& node,
-        const std::vector<ov::element::Type>& supportedPrecisionsOnActivations) {
-        return true;
-    }
+        // weights on constant path only
+        const bool constantWeight;
+        // data with per-tensor quantization only
+        const bool perTensorQuantizationOnData;
+        // limit weights by expected precisions
+        const bool limitWeightsDataPrecision;
+        const bool dynamicWeights;
+    };
+
+    WeightableLayerTransformation(const Params& params, const CanBeTransformedParams& canBeTransformedParams = {});
+
+    bool canBeTransformed(const std::shared_ptr<Node>& layer) const override;
+    bool canConvolutionBeTransformed(const std::shared_ptr<Node>& layer,
+                                     const ov::element::TypeVector& defaultPrecisions) const;
+    bool isPrecisionPreserved(std::shared_ptr<Node> layer) const noexcept override;
 
     static bool isQuantizedStatic(const std::shared_ptr<const Node>& layer,
         const bool reshapeIsRequired,
@@ -48,6 +63,9 @@ public:
     static DataPrecision getDataPrecisionOnWeights(const std::shared_ptr<Node>& node, const std::vector<ov::element::Type>& defaultPrecisions);
     static bool isAsymmetricOnWeights(const std::shared_ptr<const Node>& node,
         const std::vector<ov::element::Type>& defaultPrecisions = precision_set::get_int8_support());
+
+private:
+    const CanBeTransformedParams canBeTransformedParams;
 };
 
 } // namespace low_precision

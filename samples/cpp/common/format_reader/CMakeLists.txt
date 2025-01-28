@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2023 Intel Corporation
+# Copyright (C) 2018-2025 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
@@ -30,7 +30,7 @@ else()
     target_compile_definitions(${TARGET_NAME} PRIVATE USE_OPENCV)
 endif()
 
-target_include_directories(${TARGET_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
+target_include_directories(${TARGET_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                           PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER cpp_samples)

@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2018-2023 Intel Corporation
+# Copyright (C) 2018-2025 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
 import numpy as np
-import openvino.runtime.opset8 as ov
-from openvino.runtime import Model, Shape
+import openvino.opset8 as ov
+from openvino import Model, Shape
 
-from openvino.runtime.op.util import (
+from openvino.op.util import (
     InvariantInputDescription,
     BodyOutputDescription,
     SliceInputDescription,
@@ -121,7 +121,7 @@ def test_tensor_iterator_basic():
 
     subgraph_func = ti.get_function()
 
-    assert type(subgraph_func) == type(graph_body)
+    assert isinstance(subgraph_func, type(graph_body))
     assert compare_models(subgraph_func, graph_body)
     assert subgraph_func._get_raw_address() == graph_body._get_raw_address()
     assert ti.get_num_iterations() == 16

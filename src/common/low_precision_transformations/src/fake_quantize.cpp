@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2018-2023 Intel Corporation
+﻿// Copyright (C) 2018-2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -11,6 +11,7 @@
 
 #include "low_precision/network_helper.hpp"
 #include "low_precision/rt_info/bias_attribute.hpp"
+#include "low_precision/rt_info/disable_cleanup_attribute.hpp"
 #include "itt.hpp"
 
 namespace ov {
@@ -27,14 +28,14 @@ FakeQuantizeTransformation::FakeQuantizeTransformation(const Params& params) : L
             return false;
         }
 
-        return transform(*context, m);
+        return transform(m);
     };
 
     auto m = std::make_shared<ov::pass::pattern::Matcher>(matcher, matcher_name);
     this->register_matcher(m, callback);
 }
 
-bool FakeQuantizeTransformation::transform(TransformationContext& context, ov::pass::pattern::Matcher &m) {
+bool FakeQuantizeTransformation::transform(ov::pass::pattern::Matcher &m) {
     const auto layer = ov::as_type_ptr<opset1::FakeQuantize>(m.get_match_root());
     if (!layer || !QuantizationDetails::outputLayoutIsSupported(layer)) {
         return false;
@@ -43,7 +44,7 @@ bool FakeQuantizeTransformation::transform(TransformationContext& context, ov::p
     bool wasHandled = false;
     std::shared_ptr<opset1::FakeQuantize> fakeQuantize = layer;
     do {
-        fakeQuantize = fuseElementwise(context, this, fakeQuantize, updatePrecisions);
+        fakeQuantize = fuseElementwise(this, fakeQuantize, updatePrecisions);
         wasHandled = wasHandled || (fakeQuantize != nullptr);
     } while (fakeQuantize != nullptr);
 
@@ -157,13 +158,16 @@ bool FakeQuantizeTransformation::checkElementwise(const std::shared_ptr<Node>& e
 }
 
 std::shared_ptr<opset1::FakeQuantize> FakeQuantizeTransformation::fuseElementwise(
-    TransformationContext& context,
     MatcherPass* matcherPass,
     const std::shared_ptr<opset1::FakeQuantize>& fakeQuantize,
     const bool updatePrecisions) {
     const std::shared_ptr<Node> eltwise = fakeQuantize->get_input_node_shared_ptr(0);
 
     if (!updatePrecisions && !fq::all_precisions_equal(eltwise)) {
+        return nullptr;
+    }
+
+    if (!getAttribute<DisableCleanupAttribute>(eltwise).empty()) {
         return nullptr;
     }
 

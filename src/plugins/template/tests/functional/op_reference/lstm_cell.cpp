@@ -1,12 +1,13 @@
-// Copyright (C) 2018-2023 Intel Corporation
+// Copyright (C) 2018-2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
+
+#include "openvino/op/lstm_cell.hpp"
 
 #include <gtest/gtest.h>
 
 #include "base_reference_test.hpp"
-#include "openvino/opsets/opset1.hpp"
-#include "openvino/opsets/opset4.hpp"
+#include "openvino/op/parameter.hpp"
 
 using namespace reference_tests;
 using namespace ov;
@@ -49,6 +50,7 @@ struct Builder : ParamsBuilder<LSTMCellParams> {
 class ReferenceLSTMCellTest : public testing::TestWithParam<LSTMCellParams>, public CommonReferenceTest {
 public:
     void SetUp() override {
+        legacy_compare = true;
         auto params = GetParam();
         function = CreateFunction(params);
         inputData = {params.X.data, params.H_t.data, params.C_t.data, params.W.data, params.R.data, params.B.data};
@@ -84,15 +86,15 @@ public:
 
 private:
     static std::shared_ptr<Model> CreateFunction(const LSTMCellParams& params) {
-        const auto X = std::make_shared<opset1::Parameter>(params.X.type, params.X.shape);
-        const auto W = std::make_shared<opset1::Parameter>(params.W.type, params.W.shape);
-        const auto R = std::make_shared<opset1::Parameter>(params.R.type, params.R.shape);
-        const auto H_t = std::make_shared<opset1::Parameter>(params.H_t.type, params.H_t.shape);
-        const auto C_t = std::make_shared<opset1::Parameter>(params.C_t.type, params.C_t.shape);
-        const auto B = std::make_shared<opset1::Parameter>(params.B.type, params.B.shape);
+        const auto X = std::make_shared<op::v0::Parameter>(params.X.type, params.X.shape);
+        const auto W = std::make_shared<op::v0::Parameter>(params.W.type, params.W.shape);
+        const auto R = std::make_shared<op::v0::Parameter>(params.R.type, params.R.shape);
+        const auto H_t = std::make_shared<op::v0::Parameter>(params.H_t.type, params.H_t.shape);
+        const auto C_t = std::make_shared<op::v0::Parameter>(params.C_t.type, params.C_t.shape);
+        const auto B = std::make_shared<op::v0::Parameter>(params.B.type, params.B.shape);
 
         const auto lstm_cell =
-            std::make_shared<opset4::LSTMCell>(X,
+            std::make_shared<op::v4::LSTMCell>(X,
                                                H_t,
                                                C_t,
                                                op::util::convert_lstm_node_format(W, op::util::LSTMWeightsFormat::IOFC),
@@ -108,6 +110,7 @@ private:
 class ReferenceLSTMCellTestBiasDefaultAttrs : public ReferenceLSTMCellTest {
 public:
     void SetUp() override {
+        legacy_compare = true;
         threshold = 1e-1f;
         auto params = GetParam();
         function = CreateFunction(params);
@@ -117,15 +120,15 @@ public:
 
 private:
     static std::shared_ptr<Model> CreateFunction(const LSTMCellParams& params) {
-        const auto X = std::make_shared<opset1::Parameter>(params.X.type, params.X.shape);
-        const auto W = std::make_shared<opset1::Parameter>(params.W.type, params.W.shape);
-        const auto R = std::make_shared<opset1::Parameter>(params.R.type, params.R.shape);
-        const auto H_t = std::make_shared<opset1::Parameter>(params.H_t.type, params.H_t.shape);
-        const auto C_t = std::make_shared<opset1::Parameter>(params.C_t.type, params.C_t.shape);
-        const auto B = std::make_shared<opset1::Parameter>(params.B.type, params.B.shape);
+        const auto X = std::make_shared<op::v0::Parameter>(params.X.type, params.X.shape);
+        const auto W = std::make_shared<op::v0::Parameter>(params.W.type, params.W.shape);
+        const auto R = std::make_shared<op::v0::Parameter>(params.R.type, params.R.shape);
+        const auto H_t = std::make_shared<op::v0::Parameter>(params.H_t.type, params.H_t.shape);
+        const auto C_t = std::make_shared<op::v0::Parameter>(params.C_t.type, params.C_t.shape);
+        const auto B = std::make_shared<op::v0::Parameter>(params.B.type, params.B.shape);
 
         const auto lstm_cell =
-            std::make_shared<opset4::LSTMCell>(X,
+            std::make_shared<op::v4::LSTMCell>(X,
                                                H_t,
                                                C_t,
                                                op::util::convert_lstm_node_format(W, op::util::LSTMWeightsFormat::IOFC),
@@ -141,6 +144,7 @@ private:
 class ReferenceLSTMCellTestBiasClip : public ReferenceLSTMCellTest {
 public:
     void SetUp() override {
+        legacy_compare = true;
         threshold = 1e-1f;
         auto params = GetParam();
         function = CreateFunction(params);
@@ -152,14 +156,14 @@ private:
     static std::shared_ptr<Model> CreateFunction(const LSTMCellParams& params) {
         const float clip_threshold = 3.5f;
 
-        const auto X = std::make_shared<opset1::Parameter>(params.X.type, params.X.shape);
-        const auto W = std::make_shared<opset1::Parameter>(params.W.type, params.W.shape);
-        const auto R = std::make_shared<opset1::Parameter>(params.R.type, params.R.shape);
-        const auto H_t = std::make_shared<opset1::Parameter>(params.H_t.type, params.H_t.shape);
-        const auto C_t = std::make_shared<opset1::Parameter>(params.C_t.type, params.C_t.shape);
-        const auto B = std::make_shared<opset1::Parameter>(params.B.type, params.B.shape);
+        const auto X = std::make_shared<op::v0::Parameter>(params.X.type, params.X.shape);
+        const auto W = std::make_shared<op::v0::Parameter>(params.W.type, params.W.shape);
+        const auto R = std::make_shared<op::v0::Parameter>(params.R.type, params.R.shape);
+        const auto H_t = std::make_shared<op::v0::Parameter>(params.H_t.type, params.H_t.shape);
+        const auto C_t = std::make_shared<op::v0::Parameter>(params.C_t.type, params.C_t.shape);
+        const auto B = std::make_shared<op::v0::Parameter>(params.B.type, params.B.shape);
 
-        const auto lstm_cell = std::make_shared<opset4::LSTMCell>(X,
+        const auto lstm_cell = std::make_shared<op::v4::LSTMCell>(X,
                                                                   H_t,
                                                                   C_t,
                                                                   W,
@@ -191,15 +195,15 @@ TEST_P(ReferenceLSTMCellTestBiasClip, CompareWithRefs) {
 class ReferenceLSTMCellV1Test : public ReferenceLSTMCellTest {
 private:
     static std::shared_ptr<Model> CreateFunction(const LSTMCellParams& params) {
-        const auto X = std::make_shared<opset1::Parameter>(params.X.type, params.X.shape);
-        const auto W = std::make_shared<opset1::Parameter>(params.W.type, params.W.shape);
-        const auto R = std::make_shared<opset1::Parameter>(params.R.type, params.R.shape);
-        const auto H_t = std::make_shared<opset1::Parameter>(params.H_t.type, params.H_t.shape);
-        const auto C_t = std::make_shared<opset1::Parameter>(params.C_t.type, params.C_t.shape);
-        const auto B = std::make_shared<opset1::Parameter>(params.B.type, params.B.shape);
+        const auto X = std::make_shared<op::v0::Parameter>(params.X.type, params.X.shape);
+        const auto W = std::make_shared<op::v0::Parameter>(params.W.type, params.W.shape);
+        const auto R = std::make_shared<op::v0::Parameter>(params.R.type, params.R.shape);
+        const auto H_t = std::make_shared<op::v0::Parameter>(params.H_t.type, params.H_t.shape);
+        const auto C_t = std::make_shared<op::v0::Parameter>(params.C_t.type, params.C_t.shape);
+        const auto B = std::make_shared<op::v0::Parameter>(params.B.type, params.B.shape);
 
         const auto lstm_cell =
-            std::make_shared<opset1::LSTMCell>(X,
+            std::make_shared<op::v0::LSTMCell>(X,
                                                H_t,
                                                C_t,
                                                op::util::convert_lstm_node_format(W, op::util::LSTMWeightsFormat::IOFC),
@@ -215,15 +219,15 @@ private:
 class ReferenceLSTMCellV1TestBiasDefaultAttrs : public ReferenceLSTMCellTestBiasDefaultAttrs {
 private:
     static std::shared_ptr<Model> CreateFunction(const LSTMCellParams& params) {
-        const auto X = std::make_shared<opset1::Parameter>(params.X.type, params.X.shape);
-        const auto W = std::make_shared<opset1::Parameter>(params.W.type, params.W.shape);
-        const auto R = std::make_shared<opset1::Parameter>(params.R.type, params.R.shape);
-        const auto H_t = std::make_shared<opset1::Parameter>(params.H_t.type, params.H_t.shape);
-        const auto C_t = std::make_shared<opset1::Parameter>(params.C_t.type, params.C_t.shape);
-        const auto B = std::make_shared<opset1::Parameter>(params.B.type, params.B.shape);
+        const auto X = std::make_shared<op::v0::Parameter>(params.X.type, params.X.shape);
+        const auto W = std::make_shared<op::v0::Parameter>(params.W.type, params.W.shape);
+        const auto R = std::make_shared<op::v0::Parameter>(params.R.type, params.R.shape);
+        const auto H_t = std::make_shared<op::v0::Parameter>(params.H_t.type, params.H_t.shape);
+        const auto C_t = std::make_shared<op::v0::Parameter>(params.C_t.type, params.C_t.shape);
+        const auto B = std::make_shared<op::v0::Parameter>(params.B.type, params.B.shape);
 
         const auto lstm_cell =
-            std::make_shared<opset1::LSTMCell>(X,
+            std::make_shared<op::v0::LSTMCell>(X,
                                                H_t,
                                                C_t,
                                                op::util::convert_lstm_node_format(W, op::util::LSTMWeightsFormat::IOFC),
@@ -239,6 +243,7 @@ private:
 class ReferenceLSTMCellV1TestBiasClip : public ReferenceLSTMCellTestBiasClip {
 public:
     void SetUp() override {
+        legacy_compare = true;
         threshold = 1e-1f;
         auto params = GetParam();
         function = CreateFunction(params);
@@ -256,15 +261,15 @@ private:
     static std::shared_ptr<Model> CreateFunction(const LSTMCellParams& params) {
         const float clip_threshold = 3.5f;
 
-        const auto X = std::make_shared<opset1::Parameter>(params.X.type, params.X.shape);
-        const auto W = std::make_shared<opset1::Parameter>(params.W.type, params.W.shape);
-        const auto R = std::make_shared<opset1::Parameter>(params.R.type, params.R.shape);
-        const auto H_t = std::make_shared<opset1::Parameter>(params.H_t.type, params.H_t.shape);
-        const auto C_t = std::make_shared<opset1::Parameter>(params.C_t.type, params.C_t.shape);
-        const auto B = std::make_shared<opset1::Parameter>(params.B.type, params.B.shape);
-        const auto P = std::make_shared<opset1::Parameter>(params.P.type, params.P.shape);
+        const auto X = std::make_shared<op::v0::Parameter>(params.X.type, params.X.shape);
+        const auto W = std::make_shared<op::v0::Parameter>(params.W.type, params.W.shape);
+        const auto R = std::make_shared<op::v0::Parameter>(params.R.type, params.R.shape);
+        const auto H_t = std::make_shared<op::v0::Parameter>(params.H_t.type, params.H_t.shape);
+        const auto C_t = std::make_shared<op::v0::Parameter>(params.C_t.type, params.C_t.shape);
+        const auto B = std::make_shared<op::v0::Parameter>(params.B.type, params.B.shape);
+        const auto P = std::make_shared<op::v0::Parameter>(params.P.type, params.P.shape);
 
-        const auto lstm_cell = std::make_shared<opset1::LSTMCell>(X,
+        const auto lstm_cell = std::make_shared<op::v0::LSTMCell>(X,
                                                                   H_t,
                                                                   C_t,
                                                                   W,

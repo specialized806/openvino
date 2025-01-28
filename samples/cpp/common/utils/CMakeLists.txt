@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2023 Intel Corporation
+# Copyright (C) 2018-2025 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
@@ -11,7 +11,7 @@ add_library(${TARGET_NAME} STATIC EXCLUDE_FROM_ALL ${SOURCES})
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER "src")
 
 target_include_directories(${TARGET_NAME}
-    PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+    PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 
 find_package(OpenVINO REQUIRED COMPONENTS Runtime)
 

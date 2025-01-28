@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2023 Intel Corporation
+// Copyright (C) 2018-2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -259,7 +259,7 @@ public:
 
         auto config = get_test_default_config(engine);
         if (impl_type != impl_types::any)
-            config.set_property(ov::intel_gpu::force_implementations(ov::intel_gpu::ImplForcingMap{ {"tile", {format::bfyx, "", impl_types::cpu}} }));
+            config.set_property(ov::intel_gpu::force_implementations(ov::intel_gpu::ImplForcingMap{ {"tile", {format::bfzyx, "", impl_types::cpu}} }));
 
         cldnn::network::ptr network = get_network(engine, topology, config, get_test_stream_ptr(), is_caching_test);
         network->set_input_data("input", input);
@@ -696,7 +696,7 @@ struct tile_test
     : public ::testing::TestWithParam<ParamsWithLayout<T> > {
 public:
     void test(bool is_caching_test) {
-        const auto data_type = type_to_data_type<T>::value;
+        const auto data_type = ov::element::from<T>();
         Params<T> params;
         format::type plain_layout;
         format::type target_layout;
@@ -750,7 +750,7 @@ public:
 };
 
 using tile_test_f32 = tile_test<float>;
-using tile_test_f16 = tile_test<half_t>;
+using tile_test_f16 = tile_test<ov::float16>;
 
 TEST_P(tile_test_f32, test_case) {
     ASSERT_NO_FATAL_FAILURE(test(false));
@@ -771,7 +771,7 @@ INSTANTIATE_TEST_SUITE_P(tile_gpu_2D,
 INSTANTIATE_TEST_SUITE_P(tile_gpu_2D,
                          tile_test_f16,
                          ::testing::Combine(
-                             ::testing::ValuesIn(generateTileParams2D<half_t>()),
+                             ::testing::ValuesIn(generateTileParams2D<ov::float16>()),
                              ::testing::Values(format::bfyx),
                              ::testing::ValuesIn(layouts_2d)),
                          PrintToStringParamName());
@@ -787,7 +787,7 @@ INSTANTIATE_TEST_SUITE_P(tile_gpu_3D,
 INSTANTIATE_TEST_SUITE_P(tile_gpu_3D,
                          tile_test_f16,
                          ::testing::Combine(
-                             ::testing::ValuesIn(generateTileParams3D<half_t>()),
+                             ::testing::ValuesIn(generateTileParams3D<ov::float16>()),
                              ::testing::Values(format::bfzyx),
                              ::testing::ValuesIn(layouts_3d)),
                          PrintToStringParamName());

@@ -1,13 +1,15 @@
-// Copyright (C) 2018-2023 Intel Corporation
+// Copyright (C) 2018-2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
+
+#include "openvino/op/slice.hpp"
 
 #include <gtest/gtest.h>
 
 #include <limits>
 
 #include "base_reference_test.hpp"
-#include "openvino/opsets/opset8.hpp"
+#include "openvino/op/parameter.hpp"
 
 using namespace ov;
 
@@ -92,6 +94,7 @@ public:
             result << "axes_shape=" << param.m_axes.shape << "_";
             result << "axes_type=" << param.m_axes.type << "_";
         }
+        result << param.m_test_name;
 
         return result.str();
     }
@@ -102,13 +105,13 @@ private:
                                                  const reference_tests::Tensor& stop,
                                                  const reference_tests::Tensor& step,
                                                  const reference_tests::Tensor& axes) {
-        const auto data_param = std::make_shared<opset8::Parameter>(data.type, data.shape);
-        const auto start_param = std::make_shared<opset8::Parameter>(start.type, start.shape);
-        const auto stop_param = std::make_shared<opset8::Parameter>(stop.type, stop.shape);
-        const auto step_param = std::make_shared<opset8::Parameter>(step.type, step.shape);
-        const auto axes_param = std::make_shared<opset8::Parameter>(axes.type, axes.shape);
+        const auto data_param = std::make_shared<op::v0::Parameter>(data.type, data.shape);
+        const auto start_param = std::make_shared<op::v0::Parameter>(start.type, start.shape);
+        const auto stop_param = std::make_shared<op::v0::Parameter>(stop.type, stop.shape);
+        const auto step_param = std::make_shared<op::v0::Parameter>(step.type, step.shape);
+        const auto axes_param = std::make_shared<op::v0::Parameter>(axes.type, axes.shape);
 
-        const auto slice = std::make_shared<opset8::Slice>(data_param, start_param, stop_param, step_param, axes_param);
+        const auto slice = std::make_shared<op::v8::Slice>(data_param, start_param, stop_param, step_param, axes_param);
         return std::make_shared<Model>(NodeVector{slice},
                                        ParameterVector{data_param, start_param, stop_param, step_param, axes_param});
     }
@@ -118,12 +121,12 @@ private:
                                                  const reference_tests::Tensor& start,
                                                  const reference_tests::Tensor& stop,
                                                  const reference_tests::Tensor& step) {
-        const auto data_param = std::make_shared<opset8::Parameter>(data.type, data.shape);
-        const auto start_param = std::make_shared<opset8::Parameter>(start.type, start.shape);
-        const auto stop_param = std::make_shared<opset8::Parameter>(stop.type, stop.shape);
-        const auto step_param = std::make_shared<opset8::Parameter>(step.type, step.shape);
+        const auto data_param = std::make_shared<op::v0::Parameter>(data.type, data.shape);
+        const auto start_param = std::make_shared<op::v0::Parameter>(start.type, start.shape);
+        const auto stop_param = std::make_shared<op::v0::Parameter>(stop.type, stop.shape);
+        const auto step_param = std::make_shared<op::v0::Parameter>(step.type, step.shape);
 
-        const auto slice = std::make_shared<opset8::Slice>(data_param, start_param, stop_param, step_param);
+        const auto slice = std::make_shared<op::v8::Slice>(data_param, start_param, stop_param, step_param);
         return std::make_shared<Model>(NodeVector{slice},
                                        ParameterVector{data_param, start_param, stop_param, step_param});
     }
@@ -293,7 +296,7 @@ std::vector<SliceParams> generateSliceParamsUnsigned() {
             reference_tests::Tensor{{5}, IND_ET, std::vector<IND_T>{1, 1, 1, 1, 1}},
             reference_tests::Tensor{{5}, AXIS_ET, std::vector<AXIS_T>{0, 1, 2, 3, 4}},
             reference_tests::Tensor{
-                {2, 2, 2, 1, 2},
+                {2, 4, 2, 2, 3},
                 DATA_ET,
                 std::vector<DATA_T>{0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
                                     20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,

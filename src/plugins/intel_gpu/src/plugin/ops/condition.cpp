@@ -5,8 +5,7 @@
 #include "intel_gpu/plugin/program_builder.hpp"
 #include "intel_gpu/primitives/condition.hpp"
 
-namespace ov {
-namespace intel_gpu {
+namespace ov::intel_gpu {
 
 const size_t idx_true = 0;
 const size_t idx_false = 1;
@@ -22,10 +21,16 @@ static cldnn::condition::branch gen_branch(ProgramBuilder& p, const std::shared_
                     << ", num inputs: " << op->get_input_size() << std::endl;
 
     auto config = p.get_config();
+    {
+        auto custom_outputs = config.get_property(ov::intel_gpu::custom_outputs);
+        if (!custom_outputs.empty()) {
+            config.set_property(ov::intel_gpu::custom_outputs(std::vector<std::string>({})));
+        }
+    }
     config.set_property(ov::intel_gpu::max_dynamic_batch(1));
-    config.set_property(ov::intel_gpu::allow_new_shape_infer(op->is_dynamic()));
+    config.set_property(ov::intel_gpu::allow_new_shape_infer(op->is_dynamic() || p.use_new_shape_infer()));
 
-    ProgramBuilder prog(internal_body, p.get_engine(), config, false, false, p.get_task_executor(), true);
+    ProgramBuilder prog(internal_body, p.get_engine(), config, false, p.get_task_executor(), p.get_compilation_context(), true);
     branch.inner_program = prog.get_compiled_program();
 
     auto& input_map = branch.input_map;
@@ -61,15 +66,17 @@ static void CreateIfOp(ProgramBuilder& p, const std::shared_ptr<ov::op::v8::If>&
     auto branch_true = gen_branch(p, op, idx_true);
     auto branch_false = gen_branch(p, op, idx_false);
 
+    const size_t num_outputs = op->get_output_size();
+
     const cldnn::condition conditionPrimitive(layerName,
                                 inputs,
                                 branch_true,
-                                branch_false);
+                                branch_false,
+                                num_outputs);
 
     p.add_primitive(*op, conditionPrimitive);
 }
 
 REGISTER_FACTORY_IMPL(v8, If);
 
-}  // namespace intel_gpu
-}  // namespace ov
+}  // namespace ov::intel_gpu

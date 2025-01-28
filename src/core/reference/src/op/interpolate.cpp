@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2023 Intel Corporation
+// Copyright (C) 2018-2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -6,9 +6,8 @@
 
 #include <numeric>
 
-using namespace ov::reference;
-
-using Coordinate = ngraph::Coordinate;
+namespace ov {
+namespace reference {
 
 float InterpolateEvalHelper::triangle_coeff(float dz) {
     return std::max(0.0f, 1.0f - std::fabs(dz));
@@ -94,10 +93,10 @@ InterpolateEvalHelper::InfoForGenericLinearONNXMode InterpolateEvalHelper::get_i
     result.batch_size = batch_size;
     result.num_channels = num_channels;
     result.spatial_rank = static_cast<int64_t>(spatial_rank);
-    result.input_index_multipliers = input_index_multipliers;
-    result.output_index_multipliers = output_index_multipliers;
-    result.input_spatial_shape = input_spatial_shape;
-    result.output_spatial_shape = output_spatial_shape;
+    result.input_index_multipliers = std::move(input_index_multipliers);
+    result.output_index_multipliers = std::move(output_index_multipliers);
+    result.input_spatial_shape = std::move(input_spatial_shape);
+    result.output_spatial_shape = std::move(output_spatial_shape);
 
     return result;
 }
@@ -122,28 +121,23 @@ InterpolateEvalHelper::InfoForLinearMode InterpolateEvalHelper::get_info_for_lin
     std::vector<float> a(num_of_axes);
     std::vector<int64_t> r(num_of_axes);
 
-    NGRAPH_SUPPRESS_DEPRECATED_START
-    CoordinateTransform output_transform(m_out_shape);
-    CoordinateTransform input_transform(m_input_data_shape);
-
-    std::vector<std::size_t> vector_for_indeces(num_of_axes);
+    std::vector<std::size_t> vector_for_indices(num_of_axes);
     float prod_a = 1;
     for (std::size_t i = 0; i < num_of_axes; ++i) {
         a[i] = antialias ? m_scales[i] : 1.0f;
         prod_a *= a[i];
         r[i] = (m_scales[i] > 1.0) ? static_cast<int64_t>(2) : static_cast<int64_t>(std::ceil(2.0f / a[i]));
-        vector_for_indeces[i] = 2 * r[i] + 1;
+        vector_for_indices[i] = 2 * r[i] + 1;
     }
-    Shape shape_for_indeces{vector_for_indeces};
+    Shape shape_for_indices{vector_for_indices};
 
     InfoForLinearMode result;
 
     result.antialias = antialias;
-    result.a = a;
-    result.r = r;
+    result.a = std::move(a);
+    result.r = std::move(r);
     result.prod_a = prod_a;
-    result.shape_for_indeces = shape_for_indeces;
-    NGRAPH_SUPPRESS_DEPRECATED_END
+    result.shape_for_indices = std::move(shape_for_indices);
 
     return result;
 }
@@ -169,8 +163,8 @@ InterpolateEvalHelper::ICoords InterpolateEvalHelper::get_icoords(const Coordina
         icoords_r[axis] = static_cast<int64_t>(std::round(in_coord));
     }
 
-    result.icoords = icoords;
-    result.icoords_r = icoords_r;
+    result.icoords = std::move(icoords);
+    result.icoords_r = std::move(icoords_r);
 
     return result;
 }
@@ -224,7 +218,9 @@ InterpolateEvalHelper::LinearModeInnerIterationResult InterpolateEvalHelper::inn
     Coordinate inner_coord{unsigned_inner_coords_vector};
 
     result.w = w;
-    result.inner_coord = inner_coord;
+    result.inner_coord = std::move(inner_coord);
 
     return result;
 }
+}  // namespace reference
+}  // namespace ov

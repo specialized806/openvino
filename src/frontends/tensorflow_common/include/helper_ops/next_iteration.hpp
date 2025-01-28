@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2023 Intel Corporation
+// Copyright (C) 2018-2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -41,6 +41,16 @@ public:
                                 "[TensorFlow Frontend] internal error: back edge for NextIteration is not set");
         producer_name = m_producer_name;
         producer_output_port_idx = m_producer_output_port_idx;
+    }
+
+    void set_output_shape_and_type(const ov::PartialShape& output_shape, const ov::element::Type& output_type) {
+        set_output_type(0, output_type, output_shape);
+    }
+
+    std::shared_ptr<Node> clone_with_new_inputs(const OutputVector& inputs) const override {
+        auto next_iteration_node = std::make_shared<NextIteration>(m_decoder);
+        next_iteration_node->set_attrs(get_attrs());
+        return next_iteration_node;
     }
 
 private:

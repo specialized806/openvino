@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2023 Intel Corporation
+# Copyright (C) 2018-2025 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
 import numpy as np
@@ -29,7 +29,7 @@ class TestBF16(PytorchLayerTest):
     @pytest.mark.parametrize("to_trace", [True, False])
     def test_bf16(self, ie_device, precision, ir_version, to_trace):
         self._test(*self.create_model(), ie_device, precision,
-                   ir_version, trace_model=to_trace, freeze_model=False)
+                   ir_version, trace_model=to_trace, freeze_model=False, use_convert_model=True)
 
 
 class TestFP16(PytorchLayerTest):
@@ -53,4 +53,4 @@ class TestFP16(PytorchLayerTest):
     @pytest.mark.parametrize("to_trace", [True, False])
     def test_fp16(self, ie_device, precision, ir_version, to_trace):
         self._test(*self.create_model(), ie_device, precision,
-                   ir_version, trace_model=to_trace, freeze_model=False)
+                   ir_version, trace_model=to_trace, freeze_model=False, use_convert_model=True)

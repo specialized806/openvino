@@ -1,11 +1,11 @@
-// Copyright (C) 2018-2023 Intel Corporation
+// Copyright (C) 2018-2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
 #pragma once
 
 #include "openvino/op/op.hpp"
-#include "ngraph/op/constant.hpp"
+#include "openvino/op/constant.hpp"
 
 namespace ov {
 namespace snippets {

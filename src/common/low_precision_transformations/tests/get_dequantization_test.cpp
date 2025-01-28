@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2023 Intel Corporation
+// Copyright (C) 2018-2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -11,8 +11,8 @@
 #include "common_test_utils/ov_test_utils.hpp"
 #include "layer_transformation.hpp"
 #include "low_precision/network_helper.hpp"
-#include "lpt_ngraph_functions/common/dequantization_operations.hpp"
-#include "lpt_ngraph_functions/get_dequantization_function.hpp"
+#include "ov_lpt_models/common/dequantization_operations.hpp"
+#include "ov_lpt_models/get_dequantization.hpp"
 
 namespace {
 using namespace testing;
@@ -36,13 +36,13 @@ public:
         size_t mulDataInput;
         std::tie(isConvert, isSubtract, subDataInput, mulDataInput) = this->GetParam();
 
-        actualFunction = ngraph::builder::subgraph::GetDequantizationFunction::getOriginal(isConvert,
+        actualFunction = ov::builder::subgraph::GetDequantizationFunction::getOriginal(isConvert,
                                                                                            isSubtract,
                                                                                            subDataInput,
                                                                                            mulDataInput);
         auto dequantization =
             ov::pass::low_precision::NetworkHelper::getDequantization(actualFunction->get_result());
-        referenceFunction = ngraph::builder::subgraph::GetDequantizationFunction::getReference(dequantization);
+        referenceFunction = ov::builder::subgraph::GetDequantizationFunction::getReference(dequantization);
     }
 
     static std::string getTestCaseName(testing::TestParamInfo<GetDequantizationTestValues> obj) {

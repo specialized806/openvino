@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2023 Intel Corporation
+// Copyright (C) 2018-2025 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
 //
 
@@ -6,7 +6,7 @@
 
 #include <map>
 
-
+#include "openvino/pass/manager.hpp"
 
 #include "layer_transformation.hpp"
 #include "common_test_utils/test_common.hpp"
@@ -14,12 +14,14 @@
 #include "low_precision/common/precisions_restriction.hpp"
 #include "low_precision/common/quantization_granularity_restriction.hpp"
 
-class SimpleLowPrecisionTransformer : public ngraph::pass::FunctionPass{
+class SimpleLowPrecisionTransformer : public ov::pass::ModelPass{
 public:
+    OPENVINO_MODEL_PASS_RTTI("SimpleLowPrecisionTransformer");
     SimpleLowPrecisionTransformer(
         const std::vector<ov::pass::low_precision::PrecisionsRestriction>& precisionRestrictions = {},
         const std::vector<ov::pass::low_precision::QuantizationGranularityRestriction>& quantizationRestrictions = {},
-        const AttributeParameters& params = AttributeParameters());
+        const AttributeParameters& params = AttributeParameters(),
+        const bool addCleanup = false);
 
     template <class T, class Operation>
     void add(const TestTransformationParams& params) {
